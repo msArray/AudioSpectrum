@@ -5,7 +5,9 @@ import Music from "../assets/music.mp3";
 export class Spectrum extends Component {
     config = {
         size: 800,
+        fftSize: new URL(window.location.href).searchParams.get('fftSize') || 1024,
         circleMode: window.location.href.includes('circle'),
+        rainbowMode: window.location.href.includes('rainbow'),
     }
     state = {
         playing: false,
@@ -22,7 +24,7 @@ export class Spectrum extends Component {
         this.audioContext = new AudioContext();
         this.nodeAnalyser = this.audioContext.createAnalyser();
 
-        this.nodeAnalyser.fftSize = 1024; // ここの値を大きくすると細かくなります 範囲 32~32768
+        this.nodeAnalyser.fftSize = Number(this.config.fftSize); // ここの値を大きくすると細かくなります 範囲 32~32768
         this.nodeAnalyser.smoothingTimeConstant = 0.85;
         this.nodeAnalyser.connect(this.audioContext.destination);
 
@@ -48,18 +50,18 @@ export class Spectrum extends Component {
                 const bar = new Graphics();
                 bar.pivot.set(this.config.size / this.nodeAnalyser.frequencyBinCount / 2, 0);
                 bar.rect(0, 0, this.config.size / this.nodeAnalyser.frequencyBinCount, 10);
-                bar.fill(0xffffff/* * Math.random()*/); // ここで色をランダムにしています
+                bar.fill(this.config.rainbowMode ? 0xffffff * Math.random() : 0xffffff); // ここで色をランダムにしています
                 this.bars.push(bar);
             }
 
             this.bars.forEach((bar, i) => {
                 if (!this.config.circleMode) {
                     bar.x = (i + 0.5) * this.config.size / this.nodeAnalyser.frequencyBinCount;
-                    bar.y = this.config.size / 2;
+                    bar.y = this.config.size * 2 / 3;
                     bar.rotation = Math.PI;
                 } else {
-                    bar.x = 200 + 100 * Math.cos(2 * Math.PI * i / this.nodeAnalyser.frequencyBinCount);
-                    bar.y = 200 + 100 * Math.sin(2 * Math.PI * i / this.nodeAnalyser.frequencyBinCount);
+                    bar.x = this.config.size / 2 + 100 * Math.cos(2 * Math.PI * i / this.nodeAnalyser.frequencyBinCount);
+                    bar.y = this.config.size / 2 + 100 * Math.sin(2 * Math.PI * i / this.nodeAnalyser.frequencyBinCount);
                     bar.rotation = 2 * Math.PI * i / this.nodeAnalyser.frequencyBinCount - Math.PI / 2;
                 }
                 this.app.stage.addChild(bar);
