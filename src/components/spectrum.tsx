@@ -5,7 +5,7 @@ import Music from "../assets/music.mp3";
 export class Spectrum extends Component {
     config = {
         size: 800,
-        circleMode: false
+        circleMode: window.location.href.includes('circle'),
     }
     state = {
         playing: false,
